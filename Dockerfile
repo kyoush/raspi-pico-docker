@@ -1,22 +1,24 @@
 FROM ubuntu:latest
 
-RUN apt update
-RUN apt upgrade -y
-RUN apt install -y wget sudo python3 pkg-config neovim
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+    build-essential cmake sudo git curl wget python3 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-ARG USERNAME=develop
-ARG GROUPNAME=wheel
-ARG UID=1000
-ARG GID=1000
+ARG USERNAME=developer
+RUN useradd -m -s /bin/bash "$USERNAME" && \
+    printf "%s ALL=(ALL) NOPASSWD:ALL\n" "$USERNAME" > /etc/sudoers.d/"$USERNAME" && \
+    chmod 0440 /etc/sudoers.d/"$USERNAME"
 
-RUN groupadd -g $GID $GROUPNAME && \
-    useradd -m -s /bin/bash -u $UID -g $GID $USERNAME
-RUN echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-USER $USERNAME
 ENV SKIP_VSCODE=1
 ENV SKIP_UART=1
 
 WORKDIR /home/$USERNAME
-RUN wget https://raw.githubusercontent.com/raspberrypi/pico-setup/master/pico_setup.sh
+RUN curl -L -O https://raw.githubusercontent.com/raspberrypi/pico-setup/master/pico_setup.sh
 RUN chmod +x pico_setup.sh
 RUN ./pico_setup.sh
+
+RUN chown -R $USERNAME:$USERNAME /home/$USERNAME
+USER $USERNAME
