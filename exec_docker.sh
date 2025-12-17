@@ -1,11 +1,13 @@
 #!/bin/sh
 
-docker ps -a | grep raspi-pico-sdk | awk '{print $1}' | xargs --no-run-if-empty docker rm
+sdk_name="raspi-pico-sdk"
 
-docker build ./ -t raspi-pico-sdk
+docker ps -a | grep $sdk_name | awk '{print $1}' | xargs --no-run-if-empty docker rm
+
+docker build ./ -t $sdk_name
 
 docker run --rm \
-    -v /home/kyoshi/workspace:/home/develop/workspace \
-    -w /home/develop \
+    -v /home/$USER:/home/$USER:rw \
+    -w /home/$USER \
     -u $(id -u $USER):$(id -g $USER) \
-    -it raspi-pico-sdk
+    -it $sdk_name
